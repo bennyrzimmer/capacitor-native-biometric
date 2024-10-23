@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [6.0.5](https://github.com/Cap-go/capacitor-native-biometric/compare/6.0.4...6.0.5) (2024-10-23)
+
+
+### Bug Fixes
+
+* bug android 14 ([7de1806](https://github.com/Cap-go/capacitor-native-biometric/commit/7de180646f90095163fbaee77221c310fa8d7465))
+
 ### [6.0.4](https://github.com/Cap-go/capacitor-native-biometric/compare/6.0.3...6.0.4) (2024-10-23)
 
 ### [6.0.3](https://github.com/Cap-go/capacitor-native-biometric/compare/6.0.2...6.0.3) (2024-09-05)
