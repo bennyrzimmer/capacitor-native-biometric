@@ -199,16 +199,17 @@ Deletes the stored credentials for a given server.
 
 #### BiometricOptions
 
-| Prop                     | Type                 | Description                                                                                                                                                | Default        |
-| ------------------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| **`reason`**             | <code>string</code>  |                                                                                                                                                            |                |
-| **`title`**              | <code>string</code>  |                                                                                                                                                            |                |
-| **`subtitle`**           | <code>string</code>  |                                                                                                                                                            |                |
-| **`description`**        | <code>string</code>  |                                                                                                                                                            |                |
-| **`negativeButtonText`** | <code>string</code>  |                                                                                                                                                            |                |
-| **`useFallback`**        | <code>boolean</code> | Specifies if should fallback to passcode authentication if biometric authentication fails.                                                                 |                |
-| **`fallbackTitle`**      | <code>string</code>  | Only for iOS. Set the text for the fallback button in the authentication dialog. If this property is not specified, the default text is set by the system. |                |
-| **`maxAttempts`**        | <code>number</code>  | Only for Android. Set a maximum number of attempts for biometric authentication. The maximum allowed by android is 5.                                      | <code>1</code> |
+| Prop                       | Type                        | Description                                                                                                                                                | Default        |
+| -------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| **`reason`**               | <code>string</code>         |                                                                                                                                                            |                |
+| **`title`**                | <code>string</code>         |                                                                                                                                                            |                |
+| **`subtitle`**             | <code>string</code>         |                                                                                                                                                            |                |
+| **`description`**          | <code>string</code>         |                                                                                                                                                            |                |
+| **`negativeButtonText`**   | <code>string</code>         |                                                                                                                                                            |                |
+| **`useFallback`**          | <code>boolean</code>        | Specifies if should fallback to passcode authentication if biometric authentication fails.                                                                 |                |
+| **`fallbackTitle`**        | <code>string</code>         | Only for iOS. Set the text for the fallback button in the authentication dialog. If this property is not specified, the default text is set by the system. |                |
+| **`maxAttempts`**          | <code>number</code>         | Only for Android. Set a maximum number of attempts for biometric authentication. The maximum allowed by android is 5.                                      | <code>1</code> |
+| **`allowedBiometryTypes`** | <code>BiometryType[]</code> | Only for Android. Specify which biometry types are allowed for authentication. If not specified, all available types will be allowed.                      |                |
 
 
 #### Credentials

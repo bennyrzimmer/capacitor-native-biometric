@@ -15,15 +15,21 @@ import android.security.keystore.StrongBoxUnavailableException;
 import android.util.Base64;
 import androidx.activity.result.ActivityResult;
 import androidx.biometric.BiometricManager;
+
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
+
+import org.json.JSONException;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -37,6 +43,8 @@ import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Objects;
+
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
@@ -144,7 +152,7 @@ public class NativeBiometric extends Plugin {
   }
 
   @PluginMethod
-  public void verifyIdentity(final PluginCall call) {
+  public void verifyIdentity(final PluginCall call) throws JSONException {
     Intent intent = new Intent(getContext(), AuthActivity.class);
 
     intent.putExtra("title", call.getString("title", "Authenticate"));
@@ -173,7 +181,7 @@ public class NativeBiometric extends Plugin {
     if (allowedTypes != null) {
       int[] types = new int[allowedTypes.length()];
       for (int i = 0; i < allowedTypes.length(); i++) {
-        types[i] = allowedTypes.getInt(i);
+        types[i] = (int) allowedTypes.toList().get(i);
       }
       intent.putExtra("allowedBiometryTypes", types);
     }
@@ -265,7 +273,7 @@ public class NativeBiometric extends Plugin {
     if (result.getResultCode() == Activity.RESULT_OK) {
       Intent data = result.getData();
       if (data != null && data.hasExtra("result")) {
-        switch (data.getStringExtra("result")) {
+        switch (Objects.requireNonNull(data.getStringExtra("result"))) {
           case "success":
             call.resolve();
             break;
@@ -319,18 +327,13 @@ public class NativeBiometric extends Plugin {
   private String encryptString(String stringToEncrypt, String KEY_ALIAS)
     throws GeneralSecurityException, IOException {
     Cipher cipher;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       cipher = Cipher.getInstance(TRANSFORMATION);
       cipher.init(
         Cipher.ENCRYPT_MODE,
         getKey(KEY_ALIAS),
         new GCMParameterSpec(128, FIXED_IV)
       );
-    } else {
-      cipher = Cipher.getInstance(AES_MODE, "BC");
-      cipher.init(Cipher.ENCRYPT_MODE, getKey(KEY_ALIAS));
-    }
-    byte[] encodedBytes = cipher.doFinal(stringToEncrypt.getBytes("UTF-8"));
+      byte[] encodedBytes = cipher.doFinal(stringToEncrypt.getBytes(StandardCharsets.UTF_8));
     return Base64.encodeToString(encodedBytes, Base64.DEFAULT);
   }
 
@@ -339,19 +342,14 @@ public class NativeBiometric extends Plugin {
     byte[] encryptedData = Base64.decode(stringToDecrypt, Base64.DEFAULT);
 
     Cipher cipher;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       cipher = Cipher.getInstance(TRANSFORMATION);
       cipher.init(
         Cipher.DECRYPT_MODE,
         getKey(KEY_ALIAS),
         new GCMParameterSpec(128, FIXED_IV)
       );
-    } else {
-      cipher = Cipher.getInstance(AES_MODE, "BC");
-      cipher.init(Cipher.DECRYPT_MODE, getKey(KEY_ALIAS));
-    }
-    byte[] decryptedData = cipher.doFinal(encryptedData);
-    return new String(decryptedData, "UTF-8");
+      byte[] decryptedData = cipher.doFinal(encryptedData);
+    return new String(decryptedData, StandardCharsets.UTF_8);
   }
 
   @SuppressLint("NewAPI") // API level is already checked
@@ -368,10 +366,9 @@ public class NativeBiometric extends Plugin {
 
   private Key generateKey(String KEY_ALIAS, boolean isStrongBoxBacked)
     throws GeneralSecurityException, IOException, StrongBoxUnavailableException {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       KeyGenerator generator = KeyGenerator.getInstance(
-        KeyProperties.KEY_ALGORITHM_AES,
-        ANDROID_KEY_STORE
+              KeyProperties.KEY_ALGORITHM_AES,
+              ANDROID_KEY_STORE
       );
       KeyGenParameterSpec.Builder paramBuilder =
         new KeyGenParameterSpec.Builder(
@@ -395,9 +392,6 @@ public class NativeBiometric extends Plugin {
 
       generator.init(paramBuilder.build());
       return generator.generateKey();
-    } else {
-      return getAESKey(KEY_ALIAS);
-    }
   }
 
   private Key getKey(String KEY_ALIAS)
@@ -501,7 +495,7 @@ public class NativeBiometric extends Plugin {
 
     byte[] bytes = new byte[values.size()];
     for (int i = 0; i < bytes.length; i++) {
-      bytes[i] = values.get(i).byteValue();
+      bytes[i] = values.get(i);
     }
     return bytes;
   }
@@ -510,10 +504,6 @@ public class NativeBiometric extends Plugin {
     KeyguardManager keyguardManager = (KeyguardManager) getActivity()
       .getSystemService(Context.KEYGUARD_SERVICE);
     // Can only use fallback if the device has a pin/pattern/password lockscreen.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       return keyguardManager.isDeviceSecure();
-    } else {
-      return keyguardManager.isKeyguardSecure();
-    }
   }
 }

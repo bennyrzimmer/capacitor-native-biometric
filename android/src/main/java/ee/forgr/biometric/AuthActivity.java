@@ -6,14 +6,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import ee.forgr.biometric.capacitornativebiometric.R;
+
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 public class AuthActivity extends AppCompatActivity {
 
-  private Executor executor;
-  private int maxAttempts;
+    private int maxAttempts;
   private int counter = 0;
 
   @Override
@@ -23,7 +25,8 @@ public class AuthActivity extends AppCompatActivity {
 
     maxAttempts = getIntent().getIntExtra("maxAttempts", 1);
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      Executor executor;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
       executor = this.getMainExecutor();
     } else {
       executor = new Executor() {
@@ -38,7 +41,7 @@ public class AuthActivity extends AppCompatActivity {
       new BiometricPrompt.PromptInfo.Builder()
         .setTitle(
           getIntent().hasExtra("title")
-            ? getIntent().getStringExtra("title")
+            ? Objects.requireNonNull(getIntent().getStringExtra("title"))
             : "Authenticate"
         )
         .setSubtitle(
@@ -71,7 +74,7 @@ public class AuthActivity extends AppCompatActivity {
       } else {
         builder.setNegativeButtonText(
           getIntent().hasExtra("negativeButtonText")
-            ? getIntent().getStringExtra("negativeButtonText")
+            ? Objects.requireNonNull(getIntent().getStringExtra("negativeButtonText"))
             : "Cancel"
         );
       }
@@ -81,7 +84,7 @@ public class AuthActivity extends AppCompatActivity {
 
     BiometricPrompt biometricPrompt = new BiometricPrompt(
       this,
-      executor,
+            executor,
       new BiometricPrompt.AuthenticationCallback() {
         @Override
         public void onAuthenticationError(
@@ -100,7 +103,7 @@ public class AuthActivity extends AppCompatActivity {
           @NonNull BiometricPrompt.AuthenticationResult result
         ) {
           super.onAuthenticationSucceeded(result);
-          finishActivity("success");
+          finishActivity();
         }
 
         @Override
@@ -119,8 +122,8 @@ public class AuthActivity extends AppCompatActivity {
     biometricPrompt.authenticate(promptInfo);
   }
 
-  void finishActivity(String result) {
-    finishActivity(result, null, null);
+  void finishActivity() {
+    finishActivity("success", null, null);
   }
 
   void finishActivity(String result, Integer errorCode, String errorDetails) {
