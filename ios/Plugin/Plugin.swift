@@ -9,7 +9,15 @@ import LocalAuthentication
 
 @objc(NativeBiometric)
 public class NativeBiometric: CAPPlugin {
-
+    public let identifier = "NativeBiometric"
+    public let jsName = "NativeBiometric"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "verifyIdentity", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getCredentials", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setCredentials", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "deleteCredentials", returnType: CAPPluginReturnPromise)
+    ]
     struct Credentials {
         var username: String
         var password: String

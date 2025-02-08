@@ -373,11 +373,14 @@ public class NativeBiometric extends Plugin {
           .setRandomizedEncryptionRequired(false);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-          if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || Build.VERSION.SDK_INT > 34) {
-            // Avoiding setUnlockedDeviceRequired(true) due to known issues on Android 12-14
-            paramBuilder.setUnlockedDeviceRequired(true);
-          }
-          paramBuilder.setIsStrongBoxBacked(isStrongBoxBacked);
+        if (
+          Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+          Build.VERSION.SDK_INT > 34
+        ) {
+          // Avoiding setUnlockedDeviceRequired(true) due to known issues on Android 12-14
+          paramBuilder.setUnlockedDeviceRequired(true);
+        }
+        paramBuilder.setIsStrongBoxBacked(isStrongBoxBacked);
       }
 
       generator.init(paramBuilder.build());

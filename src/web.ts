@@ -22,15 +22,19 @@ export class NativeBiometricWeb
   }
 
   verifyIdentity(_options?: BiometricOptions): Promise<void> {
+    console.log("verifyIdentity", _options);
     throw new Error("Method not implemented.");
   }
   getCredentials(_options: GetCredentialOptions): Promise<Credentials> {
+    console.log("getCredentials", _options);
     throw new Error("Method not implemented.");
   }
   setCredentials(_options: SetCredentialOptions): Promise<void> {
+    console.log("setCredentials", _options);
     throw new Error("Method not implemented.");
   }
   deleteCredentials(_options: DeleteCredentialOptions): Promise<void> {
+    console.log("deleteCredentials", _options);
     throw new Error("Method not implemented.");
   }
 }
