@@ -55,6 +55,13 @@ export interface BiometricOptions {
    * @default 1
    */
   maxAttempts?: number;
+  /**
+   * Only for Android.
+   * Specify which biometry types are allowed for authentication.
+   * If not specified, all available types will be allowed.
+   * @example [BiometryType.FINGERPRINT, BiometryType.FACE_AUTHENTICATION]
+   */
+  allowedBiometryTypes?: BiometryType[];
 }
 
 export interface GetCredentialOptions {

@@ -168,6 +168,16 @@ public class NativeBiometric extends Plugin {
       intent.putExtra("maxAttempts", call.getInt("maxAttempts"));
     }
 
+    // Pass allowed biometry types
+    JSArray allowedTypes = call.getArray("allowedBiometryTypes");
+    if (allowedTypes != null) {
+      int[] types = new int[allowedTypes.length()];
+      for (int i = 0; i < allowedTypes.length(); i++) {
+        types[i] = allowedTypes.getInt(i);
+      }
+      intent.putExtra("allowedBiometryTypes", types);
+    }
+
     boolean useFallback = Boolean.TRUE.equals(
       call.getBoolean("useFallback", false)
     );

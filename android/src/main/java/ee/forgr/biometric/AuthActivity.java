@@ -53,18 +53,28 @@ public class AuthActivity extends AppCompatActivity {
         );
 
     boolean useFallback = getIntent().getBooleanExtra("useFallback", false);
+    int[] allowedTypes = getIntent().getIntArrayExtra("allowedBiometryTypes");
 
-    if (useFallback) {
-      // TODO: Deprecated function, probably want to migrate to `setAllowedAuthenticators`
-      builder.setDeviceCredentialAllowed(true);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG;
+      if (useFallback) {
+        authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+      }
+      if (allowedTypes != null) {
+        // Filter authenticators based on allowed types
+        authenticators = getAllowedAuthenticators(allowedTypes);
+      }
+      builder.setAllowedAuthenticators(authenticators);
     } else {
-      // Note that this option is incompatible with device credential authentication and must NOT be set if the latter is enabled via `setAllowedAuthenticators` or `setDeviceCredentialAllowed`.
-      // @see https://developer.android.com/reference/androidx/biometric/BiometricPrompt.PromptInfo.Builder#setNegativeButtonText(java.lang.CharSequence)
-      builder.setNegativeButtonText(
-        getIntent().hasExtra("negativeButtonText")
-          ? getIntent().getStringExtra("negativeButtonText")
-          : "Cancel"
-      );
+      if (useFallback) {
+        builder.setDeviceCredentialAllowed(true);
+      } else {
+        builder.setNegativeButtonText(
+          getIntent().hasExtra("negativeButtonText")
+            ? getIntent().getStringExtra("negativeButtonText")
+            : "Cancel"
+        );
+      }
     }
 
     BiometricPrompt.PromptInfo promptInfo = builder.build();
@@ -157,5 +167,23 @@ public class AuthActivity extends AppCompatActivity {
       default:
         return 0;
     }
+  }
+
+  private int getAllowedAuthenticators(int[] allowedTypes) {
+    int authenticators = 0;
+    for (int type : allowedTypes) {
+      switch (type) {
+        case 3: // FINGERPRINT
+          authenticators |= BiometricManager.Authenticators.BIOMETRIC_STRONG;
+          break;
+        case 4: // FACE_AUTHENTICATION
+          authenticators |= BiometricManager.Authenticators.BIOMETRIC_STRONG;
+          break;
+        case 5: // IRIS_AUTHENTICATION
+          authenticators |= BiometricManager.Authenticators.BIOMETRIC_STRONG;
+          break;
+      }
+    }
+    return authenticators > 0 ? authenticators : BiometricManager.Authenticators.BIOMETRIC_STRONG;
   }
 }
