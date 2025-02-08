@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [7.1.0](https://github.com/Cap-go/capacitor-native-biometric/compare/6.0.5...7.1.0) (2025-02-08)
+
+
+### Features
+
+* add allowedBiometryTypes ([68933f4](https://github.com/Cap-go/capacitor-native-biometric/commit/68933f4f5501f784eef290e12c44ab9f2266e41c))
+* add option to select allowed biometry types ([a4651f9](https://github.com/Cap-go/capacitor-native-biometric/commit/a4651f9d20a7bcdb29717495248f59b98cdd6bb0))
+
+
+### Bug Fixes
+
+* CICD ([5ab1d7b](https://github.com/Cap-go/capacitor-native-biometric/commit/5ab1d7b1e88aa2a5edbf699b87621a9da5577ceb))
+* CICD ([f4aec22](https://github.com/Cap-go/capacitor-native-biometric/commit/f4aec228ee4d9b0cf8d5e3b28373ef61a9e18f37))
+
 ### [6.0.5](https://github.com/Cap-go/capacitor-native-biometric/compare/6.0.4...6.0.5) (2024-10-23)
 
 
