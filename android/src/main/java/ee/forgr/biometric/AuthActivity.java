@@ -9,13 +9,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricManager;
 import androidx.biometric.BiometricPrompt;
 import ee.forgr.biometric.capacitornativebiometric.R;
-
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
 public class AuthActivity extends AppCompatActivity {
 
-    private int maxAttempts;
+  private int maxAttempts;
   private int counter = 0;
 
   @Override
@@ -25,8 +24,8 @@ public class AuthActivity extends AppCompatActivity {
 
     maxAttempts = getIntent().getIntExtra("maxAttempts", 1);
 
-      Executor executor;
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+    Executor executor;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
       executor = this.getMainExecutor();
     } else {
       executor = new Executor() {
@@ -74,7 +73,9 @@ public class AuthActivity extends AppCompatActivity {
       } else {
         builder.setNegativeButtonText(
           getIntent().hasExtra("negativeButtonText")
-            ? Objects.requireNonNull(getIntent().getStringExtra("negativeButtonText"))
+            ? Objects.requireNonNull(
+              getIntent().getStringExtra("negativeButtonText")
+            )
             : "Cancel"
         );
       }
@@ -84,7 +85,7 @@ public class AuthActivity extends AppCompatActivity {
 
     BiometricPrompt biometricPrompt = new BiometricPrompt(
       this,
-            executor,
+      executor,
       new BiometricPrompt.AuthenticationCallback() {
         @Override
         public void onAuthenticationError(
@@ -187,6 +188,8 @@ public class AuthActivity extends AppCompatActivity {
           break;
       }
     }
-    return authenticators > 0 ? authenticators : BiometricManager.Authenticators.BIOMETRIC_STRONG;
+    return authenticators > 0
+      ? authenticators
+      : BiometricManager.Authenticators.BIOMETRIC_STRONG;
   }
 }

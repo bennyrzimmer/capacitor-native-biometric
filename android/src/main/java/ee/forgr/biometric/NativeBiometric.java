@@ -15,7 +15,6 @@ import android.security.keystore.StrongBoxUnavailableException;
 import android.util.Base64;
 import androidx.activity.result.ActivityResult;
 import androidx.biometric.BiometricManager;
-
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -23,9 +22,6 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
-
-import org.json.JSONException;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,7 +40,6 @@ import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Objects;
-
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
@@ -52,6 +47,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import org.json.JSONException;
 
 @CapacitorPlugin(name = "NativeBiometric")
 public class NativeBiometric extends Plugin {
@@ -327,13 +323,15 @@ public class NativeBiometric extends Plugin {
   private String encryptString(String stringToEncrypt, String KEY_ALIAS)
     throws GeneralSecurityException, IOException {
     Cipher cipher;
-      cipher = Cipher.getInstance(TRANSFORMATION);
-      cipher.init(
-        Cipher.ENCRYPT_MODE,
-        getKey(KEY_ALIAS),
-        new GCMParameterSpec(128, FIXED_IV)
-      );
-      byte[] encodedBytes = cipher.doFinal(stringToEncrypt.getBytes(StandardCharsets.UTF_8));
+    cipher = Cipher.getInstance(TRANSFORMATION);
+    cipher.init(
+      Cipher.ENCRYPT_MODE,
+      getKey(KEY_ALIAS),
+      new GCMParameterSpec(128, FIXED_IV)
+    );
+    byte[] encodedBytes = cipher.doFinal(
+      stringToEncrypt.getBytes(StandardCharsets.UTF_8)
+    );
     return Base64.encodeToString(encodedBytes, Base64.DEFAULT);
   }
 
@@ -342,13 +340,13 @@ public class NativeBiometric extends Plugin {
     byte[] encryptedData = Base64.decode(stringToDecrypt, Base64.DEFAULT);
 
     Cipher cipher;
-      cipher = Cipher.getInstance(TRANSFORMATION);
-      cipher.init(
-        Cipher.DECRYPT_MODE,
-        getKey(KEY_ALIAS),
-        new GCMParameterSpec(128, FIXED_IV)
-      );
-      byte[] decryptedData = cipher.doFinal(encryptedData);
+    cipher = Cipher.getInstance(TRANSFORMATION);
+    cipher.init(
+      Cipher.DECRYPT_MODE,
+      getKey(KEY_ALIAS),
+      new GCMParameterSpec(128, FIXED_IV)
+    );
+    byte[] decryptedData = cipher.doFinal(encryptedData);
     return new String(decryptedData, StandardCharsets.UTF_8);
   }
 
@@ -366,32 +364,31 @@ public class NativeBiometric extends Plugin {
 
   private Key generateKey(String KEY_ALIAS, boolean isStrongBoxBacked)
     throws GeneralSecurityException, IOException, StrongBoxUnavailableException {
-      KeyGenerator generator = KeyGenerator.getInstance(
-              KeyProperties.KEY_ALGORITHM_AES,
-              ANDROID_KEY_STORE
-      );
-      KeyGenParameterSpec.Builder paramBuilder =
-        new KeyGenParameterSpec.Builder(
-          KEY_ALIAS,
-          KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
-        )
-          .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-          .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-          .setRandomizedEncryptionRequired(false);
+    KeyGenerator generator = KeyGenerator.getInstance(
+      KeyProperties.KEY_ALGORITHM_AES,
+      ANDROID_KEY_STORE
+    );
+    KeyGenParameterSpec.Builder paramBuilder = new KeyGenParameterSpec.Builder(
+      KEY_ALIAS,
+      KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
+    )
+      .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+      .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+      .setRandomizedEncryptionRequired(false);
 
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        if (
-          Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
-          Build.VERSION.SDK_INT > 34
-        ) {
-          // Avoiding setUnlockedDeviceRequired(true) due to known issues on Android 12-14
-          paramBuilder.setUnlockedDeviceRequired(true);
-        }
-        paramBuilder.setIsStrongBoxBacked(isStrongBoxBacked);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      if (
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+        Build.VERSION.SDK_INT > 34
+      ) {
+        // Avoiding setUnlockedDeviceRequired(true) due to known issues on Android 12-14
+        paramBuilder.setUnlockedDeviceRequired(true);
       }
+      paramBuilder.setIsStrongBoxBacked(isStrongBoxBacked);
+    }
 
-      generator.init(paramBuilder.build());
-      return generator.generateKey();
+    generator.init(paramBuilder.build());
+    return generator.generateKey();
   }
 
   private Key getKey(String KEY_ALIAS)
@@ -504,6 +501,6 @@ public class NativeBiometric extends Plugin {
     KeyguardManager keyguardManager = (KeyguardManager) getActivity()
       .getSystemService(Context.KEYGUARD_SERVICE);
     // Can only use fallback if the device has a pin/pattern/password lockscreen.
-      return keyguardManager.isDeviceSecure();
+    return keyguardManager.isDeviceSecure();
   }
 }
