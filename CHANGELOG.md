@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.1.5](https://github.com/Cap-go/capacitor-native-biometric/compare/7.1.4...7.1.5) (2025-02-17)
+
+
+### Bug Fixes
+
+* crash negativeText ([9d39453](https://github.com/Cap-go/capacitor-native-biometric/commit/9d394532a588e32430ba9eb71ab0237d69838f4e))
+
 ### [7.1.4](https://github.com/Cap-go/capacitor-native-biometric/compare/7.1.3...7.1.4) (2025-02-17)
 
 
