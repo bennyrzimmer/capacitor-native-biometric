@@ -86,9 +86,16 @@ public class AuthActivity extends AppCompatActivity {
           @NonNull CharSequence errString
         ) {
           super.onAuthenticationError(errorCode, errString);
-          int pluginErrorCode = AuthActivity.convertToPluginErrorCode(
-            errorCode
-          );
+          // Handle lockout cases explicitly
+          if (
+            errorCode == BiometricPrompt.ERROR_LOCKOUT ||
+            errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
+          ) {
+            int pluginErrorCode = convertToPluginErrorCode(errorCode);
+            finishActivity("error", pluginErrorCode, errString.toString());
+            return;
+          }
+          int pluginErrorCode = convertToPluginErrorCode(errorCode);
           finishActivity("error", pluginErrorCode, errString.toString());
         }
 
@@ -104,11 +111,10 @@ public class AuthActivity extends AppCompatActivity {
         public void onAuthenticationFailed() {
           super.onAuthenticationFailed();
           counter++;
-          if (counter == maxAttempts) finishActivity(
-            "failed",
-            10,
-            "Authentication failed."
-          );
+          if (counter >= maxAttempts) {
+            // Use error code 4 for too many attempts to match iOS behavior
+            finishActivity("error", 4, "Too many failed attempts");
+          }
         }
       }
     );
@@ -146,11 +152,11 @@ public class AuthActivity extends AppCompatActivity {
       case BiometricPrompt.ERROR_HW_NOT_PRESENT:
         return 1;
       case BiometricPrompt.ERROR_LOCKOUT_PERMANENT:
-        return 2;
+        return 2; // Permanent lockout
       case BiometricPrompt.ERROR_NO_BIOMETRICS:
         return 3;
       case BiometricPrompt.ERROR_LOCKOUT:
-        return 4;
+        return 4; // Temporary lockout (too many attempts)
       // Authentication Failure (10) Handled by `onAuthenticationFailed`.
       // App Cancel (11), Invalid Context (12), and Not Interactive (13) are not valid error codes for Android.
       case BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL:
@@ -161,6 +167,8 @@ public class AuthActivity extends AppCompatActivity {
       case BiometricPrompt.ERROR_USER_CANCELED:
       case BiometricPrompt.ERROR_NEGATIVE_BUTTON:
         return 16;
+      case BiometricPrompt.AUTHENTICATION_RESULT_TYPE_BIOMETRIC:
+        return 0; // Success case, should not be handled here
       default:
         return 0;
     }
