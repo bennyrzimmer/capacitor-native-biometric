@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.security.KeyPairGeneratorSpec;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.security.keystore.StrongBoxUnavailableException;
@@ -74,42 +73,48 @@ public class NativeBiometric extends Plugin {
 
   private int getAvailableFeature() {
     // default to none
-    int type = NONE;
+    BiometricManager biometricManager = BiometricManager.from(getContext());
 
-    // if has fingerprint
-    if (
-      getContext()
-        .getPackageManager()
-        .hasSystemFeature(PackageManager.FEATURE_FINGERPRINT)
-    ) {
-      type = FINGERPRINT;
+    // Check for biometric capabilities
+    int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG;
+    int canAuthenticate = biometricManager.canAuthenticate(authenticators);
+
+    if (canAuthenticate == BiometricManager.BIOMETRIC_SUCCESS) {
+      // Check specific features
+      PackageManager pm = getContext().getPackageManager();
+      boolean hasFinger = pm.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT);
+      boolean hasIris = false;
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        hasIris = pm.hasSystemFeature(PackageManager.FEATURE_IRIS);
+      }
+
+      // For face, we rely on BiometricManager since it's more reliable
+      boolean hasFace = false;
+      try {
+        // Try to create a face authentication prompt - if it succeeds, face auth is available
+        androidx.biometric.BiometricPrompt.PromptInfo promptInfo = new androidx.biometric.BiometricPrompt.PromptInfo.Builder()
+          .setTitle("Test")
+          .setNegativeButtonText("Cancel")
+          .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+          .build();
+        hasFace = true;
+      } catch (Exception e) {
+        System.out.println("Error creating face authentication prompt: " + e.getMessage());
+      }
+
+      // Determine the type based on available features
+      if (hasFinger && (hasFace || hasIris)) {
+        return MULTIPLE;
+      } else if (hasFinger) {
+        return FINGERPRINT;
+      } else if (hasFace) {
+        return FACE_AUTHENTICATION;
+      } else if (hasIris) {
+        return IRIS_AUTHENTICATION;
+      }
     }
 
-    // if has face auth
-    if (
-      getContext()
-        .getPackageManager()
-        .hasSystemFeature(PackageManager.FEATURE_FACE)
-    ) {
-      // if also has fingerprint
-      if (type != NONE) return MULTIPLE;
-
-      type = FACE_AUTHENTICATION;
-    }
-
-    // if has iris auth
-    if (
-      getContext()
-        .getPackageManager()
-        .hasSystemFeature(PackageManager.FEATURE_IRIS)
-    ) {
-      // if also has fingerprint or face auth
-      if (type != NONE) return MULTIPLE;
-
-      type = IRIS_AUTHENTICATION;
-    }
-
-    return type;
+    return NONE;
   }
 
   @PluginMethod
@@ -121,7 +126,11 @@ public class NativeBiometric extends Plugin {
     );
 
     BiometricManager biometricManager = BiometricManager.from(getContext());
-    int canAuthenticateResult = biometricManager.canAuthenticate();
+    int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG;
+    if (useFallback) {
+      authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+    }
+    int canAuthenticateResult = biometricManager.canAuthenticate(authenticators);
     // Using deviceHasCredentials instead of canAuthenticate(DEVICE_CREDENTIAL)
     // > "Developers that wish to check for the presence of a PIN, pattern, or password on these versions should instead use isDeviceSecure."
     // @see https://developer.android.com/reference/androidx/biometric/BiometricManager#canAuthenticate(int)
@@ -153,23 +162,24 @@ public class NativeBiometric extends Plugin {
 
     intent.putExtra("title", call.getString("title", "Authenticate"));
 
-    if (call.hasOption("subtitle")) {
-      intent.putExtra("subtitle", call.getString("subtitle"));
+    String subtitle = call.getString("subtitle");
+    if (subtitle != null) {
+      intent.putExtra("subtitle", subtitle);
     }
 
-    if (call.hasOption("description")) {
-      intent.putExtra("description", call.getString("description"));
+    String description = call.getString("description");
+    if (description != null) {
+      intent.putExtra("description", description);
     }
 
-    if (call.hasOption("negativeButtonText")) {
-      intent.putExtra(
-        "negativeButtonText",
-        call.getString("negativeButtonText")
-      );
+    String negativeButtonText = call.getString("negativeButtonText");
+    if (negativeButtonText != null) {
+      intent.putExtra("negativeButtonText", negativeButtonText);
     }
 
-    if (call.hasOption("maxAttempts")) {
-      intent.putExtra("maxAttempts", call.getInt("maxAttempts"));
+    Integer maxAttempts = call.getInt("maxAttempts");
+    if (maxAttempts != null) {
+      intent.putExtra("maxAttempts", maxAttempts);
     }
 
     // Pass allowed biometry types
@@ -220,7 +230,7 @@ public class NativeBiometric extends Plugin {
         call.resolve();
       } catch (GeneralSecurityException | IOException e) {
         call.reject("Failed to save credentials", e);
-        e.printStackTrace();
+        System.out.println("Error saving credentials: " + e.getMessage());
       }
     } else {
       call.reject("Missing properties");
@@ -443,8 +453,12 @@ public class NativeBiometric extends Plugin {
         ANDROID_KEY_STORE
       );
       keyPairGenerator.initialize(
-        new KeyPairGeneratorSpec.Builder(getContext())
-          .setAlias(KEY_ALIAS)
+        new KeyGenParameterSpec.Builder(
+          KEY_ALIAS,
+          KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
+        )
+          .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
+          .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
           .build()
       );
       keyPairGenerator.generateKeyPair();
@@ -471,8 +485,7 @@ public class NativeBiometric extends Plugin {
     cipherOutputStream.write(secret);
     cipherOutputStream.close();
 
-    byte[] vals = outputStream.toByteArray();
-    return vals;
+    return outputStream.toByteArray();
   }
 
   private byte[] rsaDecrypt(byte[] encrypted, String KEY_ALIAS)

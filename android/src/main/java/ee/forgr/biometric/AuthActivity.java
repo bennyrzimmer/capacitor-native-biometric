@@ -57,28 +57,24 @@ public class AuthActivity extends AppCompatActivity {
     boolean useFallback = getIntent().getBooleanExtra("useFallback", false);
     int[] allowedTypes = getIntent().getIntArrayExtra("allowedBiometryTypes");
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG;
-      if (useFallback) {
-        authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
-      }
-      if (allowedTypes != null) {
-        // Filter authenticators based on allowed types
-        authenticators = getAllowedAuthenticators(allowedTypes);
-      }
-      builder.setAllowedAuthenticators(authenticators);
-    } else {
-      if (useFallback) {
-        builder.setDeviceCredentialAllowed(true);
-      } else {
-        builder.setNegativeButtonText(
-          getIntent().hasExtra("negativeButtonText")
-            ? Objects.requireNonNull(
-              getIntent().getStringExtra("negativeButtonText")
-            )
-            : "Cancel"
-        );
-      }
+    int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG;
+    if (useFallback) {
+      authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+    }
+    if (allowedTypes != null) {
+      // Filter authenticators based on allowed types
+      authenticators = getAllowedAuthenticators(allowedTypes);
+    }
+    builder.setAllowedAuthenticators(authenticators);
+
+    if (!useFallback) {
+      builder.setNegativeButtonText(
+        getIntent().hasExtra("negativeButtonText")
+          ? Objects.requireNonNull(
+            getIntent().getStringExtra("negativeButtonText")
+          )
+          : "Cancel"
+      );
     }
 
     BiometricPrompt.PromptInfo promptInfo = builder.build();
