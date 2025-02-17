@@ -82,7 +82,9 @@ public class NativeBiometric extends Plugin {
     if (canAuthenticate == BiometricManager.BIOMETRIC_SUCCESS) {
       // Check specific features
       PackageManager pm = getContext().getPackageManager();
-      boolean hasFinger = pm.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT);
+      boolean hasFinger = pm.hasSystemFeature(
+        PackageManager.FEATURE_FINGERPRINT
+      );
       boolean hasIris = false;
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         hasIris = pm.hasSystemFeature(PackageManager.FEATURE_IRIS);
@@ -92,14 +94,19 @@ public class NativeBiometric extends Plugin {
       boolean hasFace = false;
       try {
         // Try to create a face authentication prompt - if it succeeds, face auth is available
-        androidx.biometric.BiometricPrompt.PromptInfo promptInfo = new androidx.biometric.BiometricPrompt.PromptInfo.Builder()
-          .setTitle("Test")
-          .setNegativeButtonText("Cancel")
-          .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
-          .build();
+        androidx.biometric.BiometricPrompt.PromptInfo promptInfo =
+          new androidx.biometric.BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Test")
+            .setNegativeButtonText("Cancel")
+            .setAllowedAuthenticators(
+              BiometricManager.Authenticators.BIOMETRIC_STRONG
+            )
+            .build();
         hasFace = true;
       } catch (Exception e) {
-        System.out.println("Error creating face authentication prompt: " + e.getMessage());
+        System.out.println(
+          "Error creating face authentication prompt: " + e.getMessage()
+        );
       }
 
       // Determine the type based on available features
@@ -130,7 +137,9 @@ public class NativeBiometric extends Plugin {
     if (useFallback) {
       authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
     }
-    int canAuthenticateResult = biometricManager.canAuthenticate(authenticators);
+    int canAuthenticateResult = biometricManager.canAuthenticate(
+      authenticators
+    );
     // Using deviceHasCredentials instead of canAuthenticate(DEVICE_CREDENTIAL)
     // > "Developers that wish to check for the presence of a PIN, pattern, or password on these versions should instead use isDeviceSecure."
     // @see https://developer.android.com/reference/androidx/biometric/BiometricManager#canAuthenticate(int)
