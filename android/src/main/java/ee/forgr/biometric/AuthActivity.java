@@ -69,7 +69,9 @@ public class AuthActivity extends AppCompatActivity {
 
     if (!useFallback) {
       String negativeText = getIntent().getStringExtra("negativeButtonText");
-      builder.setNegativeButtonText(negativeText != null ? negativeText : "Cancel");
+      builder.setNegativeButtonText(
+        negativeText != null ? negativeText : "Cancel"
+      );
     }
 
     BiometricPrompt.PromptInfo promptInfo = builder.build();
