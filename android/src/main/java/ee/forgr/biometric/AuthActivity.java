@@ -58,16 +58,19 @@ public class AuthActivity extends AppCompatActivity {
     int[] allowedTypes = getIntent().getIntArrayExtra("allowedBiometryTypes");
 
     int authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG;
-    if (useFallback) {
+    if (useFallback && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
       authenticators |= BiometricManager.Authenticators.DEVICE_CREDENTIAL;
     }
     if (allowedTypes != null) {
       // Filter authenticators based on allowed types
       authenticators = getAllowedAuthenticators(allowedTypes);
     }
-    builder.setAllowedAuthenticators(authenticators);
 
-    if (!useFallback) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { // Android 11+
+      builder.setAllowedAuthenticators(authenticators);
+    }
+
+    if (!useFallback || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
       String negativeText = getIntent().getStringExtra("negativeButtonText");
       builder.setNegativeButtonText(
         negativeText != null ? negativeText : "Cancel"
